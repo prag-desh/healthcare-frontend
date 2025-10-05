@@ -1,0 +1,23 @@
+import React from 'react';
+import { AlertCircle } from 'lucide-react';
+
+const ErrorMessage = ({ message }) => {
+  return (
+    <div style={{
+      display: 'flex',
+      alignItems: 'center',
+      gap: '12px',
+      padding: '16px',
+      backgroundColor: '#fee2e2',
+      border: '1px solid #fecaca',
+      borderRadius: '8px',
+      color: '#991b1b',
+      marginBottom: '20px'
+    }}>
+      <AlertCircle size={20} />
+      <p style={{ margin: 0 }}>{message}</p>
+    </div>
+  );
+};
+
+export default ErrorMessage;

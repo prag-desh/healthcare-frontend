@@ -1,0 +1,88 @@
+.appointment-booking-page {
+  padding: 40px 0;
+  min-height: calc(100vh - 70px);
+}
+
+.booking-content {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.booking-form {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 32px;
+}
+
+.form-section {
+  margin-bottom: 32px;
+  padding-bottom: 32px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.form-section:last-of-type {
+  border-bottom: none;
+}
+
+.form-section h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+  color: #1e293b;
+}
+
+.patient-info {
+  background: #f8fafc;
+  padding: 16px;
+  border-radius: 8px;
+}
+
+.patient-info p {
+  margin-bottom: 8px;
+  color: #374151;
+}
+
+.selected-doctor-info {
+  background: #eff6ff;
+  padding: 16px;
+  border-radius: 8px;
+  margin-top: 16px;
+}
+
+.selected-doctor-info p {
+  margin-bottom: 8px;
+  color: #1e40af;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.form-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: flex-end;
+  margin-top: 32px;
+}
+
+@media (max-width: 768px) {
+  .booking-form {
+    padding: 20px;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .form-actions {
+    flex-direction: column-reverse;
+  }
+
+  .form-actions button {
+    width: 100%;
+  }
+}
