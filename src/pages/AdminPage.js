@@ -4,12 +4,12 @@ import { toast } from 'react-toastify';
 import { appointmentsAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import LoadingSpinner from '../components/LoadingSpinner';
-import { Calendar, Clock, User, FileText, X } from 'lucide-react';
+import { Calendar, Clock, FileText, X } from 'lucide-react';
 import './AdminPage.css';
 
 const AdminPage = () => {
   const navigate = useNavigate();
-  const { user, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
@@ -22,7 +22,7 @@ const AdminPage = () => {
     }
 
     fetchAppointments();
-  }, [isAuthenticated]);
+  }, [isAuthenticated, navigate]);
 
   const fetchAppointments = async () => {
     try {

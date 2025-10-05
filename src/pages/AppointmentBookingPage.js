@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 import { appointmentsAPI, doctorsAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import LoadingSpinner from '../components/LoadingSpinner';
-import { Calendar, Clock, User, FileText } from 'lucide-react';
+import { Calendar, User, FileText } from 'lucide-react';
 import './AppointmentBookingPage.css';
 
 const AppointmentBookingPage = () => {
@@ -45,7 +45,7 @@ const AppointmentBookingPage = () => {
       const doctor = location.state.selectedDoctor;
       handleDoctorSelection(doctor);
     }
-  }, [isAuthenticated, location.state]);
+  }, [isAuthenticated, navigate, location.state]);
 
   const fetchDoctors = async () => {
     try {

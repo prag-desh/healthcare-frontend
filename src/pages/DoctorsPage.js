@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { doctorsAPI } from '../services/api';
 import { toast } from 'react-toastify';
@@ -15,11 +15,7 @@ const DoctorsPage = () => {
     city: ''
   });
 
-  useEffect(() => {
-    fetchDoctors();
-  }, [filters]);
-
-  const fetchDoctors = async () => {
+  const fetchDoctors = useCallback(async () => {
     try {
       setLoading(true);
       const response = await doctorsAPI.getAllDoctors(filters);
@@ -33,7 +29,11 @@ const DoctorsPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters]);
+
+  useEffect(() => {
+    fetchDoctors();
+  }, [fetchDoctors]);
 
   const handleFilterChange = (e) => {
     setFilters({
