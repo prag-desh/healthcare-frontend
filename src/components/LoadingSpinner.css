@@ -1,0 +1,86 @@
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  min-height: 400px;
+}
+
+/* Modern Spinner */
+.spinner-modern {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  border-radius: 20px;
+  color: white;
+  box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+}
+
+/* Pulse Loader */
+.pulse-loader {
+  position: relative;
+  width: 100px;
+  height: 100px;
+}
+
+.pulse-circle {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  border-radius: 50%;
+  color: white;
+}
+
+/* Dots Loader */
+.dots-loader {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: center;
+  height: 60px;
+}
+
+.dot {
+  width: 16px;
+  height: 16px;
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  border-radius: 50%;
+}
+
+/* Loading Message */
+.loading-message {
+  margin-top: 2rem;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #64748b;
+  text-align: center;
+}
+
+/* Shimmer Effect for Skeleton Loaders */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    #f1f5f9 0%,
+    #e2e8f0 50%,
+    #f1f5f9 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 0.5rem;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
