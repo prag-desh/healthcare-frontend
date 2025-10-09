@@ -1,6 +1,7 @@
-import React, { useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
-import { motion, useInView, useAnimation } from 'framer-motion';
+import React, { useEffect, useRef, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { motion, useInView } from 'framer-motion';
+import { hospitalsAPI } from '../services/api';
 import { 
   Calendar, 
   Stethoscope, 
@@ -15,7 +16,9 @@ import {
   Award,
   Zap,
   Heart,
-  Activity
+  Activity,
+  Building2,
+  MapPin
 } from 'lucide-react';
 import './HomePage.css';
 
@@ -30,6 +33,9 @@ const HomePage = () => {
       
       {/* Features Section */}
       <FeaturesSection />
+      
+      {/* Featured Hospitals Section - NEW */}
+      <FeaturedHospitalsSection />
       
       {/* How It Works Section */}
       <HowItWorksSection />
@@ -95,14 +101,14 @@ const HeroSection = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.3 }}
           >
-            <Link to="/doctors" className="btn btn-primary btn-xl">
-              <Stethoscope size={20} />
-              Find Doctors
+            <Link to="/hospitals" className="btn btn-primary btn-xl">
+              <Building2 size={20} />
+              Find Hospitals
               <ArrowRight size={20} />
             </Link>
-            <Link to="/book-appointment" className="btn btn-secondary btn-xl">
-              <Calendar size={20} />
-              Book Appointment
+            <Link to="/doctors" className="btn btn-secondary btn-xl">
+              <Stethoscope size={20} />
+              Find Doctors
             </Link>
           </motion.div>
 
@@ -118,11 +124,11 @@ const HeroSection = () => {
             </div>
             <div className="trust-item">
               <CheckCircle size={16} />
-              <span>10,000+ Happy Patients</span>
+              <span>100+ Top Hospitals</span>
             </div>
             <div className="trust-item">
               <CheckCircle size={16} />
-              <span>98% Satisfaction Rate</span>
+              <span>10,000+ Happy Patients</span>
             </div>
           </motion.div>
         </div>
@@ -177,9 +183,9 @@ const StatsSection = () => {
   const isInView = useInView(ref, { once: true, margin: "-100px" });
 
   const stats = [
+    { icon: Building2, value: '100+', label: 'Partner Hospitals' },
     { icon: Users, value: '10,000+', label: 'Happy Patients' },
     { icon: Stethoscope, value: '500+', label: 'Expert Doctors' },
-    { icon: Calendar, value: '50,000+', label: 'Appointments Booked' },
     { icon: Award, value: '98%', label: 'Satisfaction Rate' }
   ];
 
@@ -215,10 +221,16 @@ const FeaturesSection = () => {
 
   const features = [
     {
+      icon: Building2,
+      title: 'Multi-Hospital Network',
+      description: 'Access 100+ top hospitals across India through one unified platform. Book appointments anywhere, anytime.',
+      color: 'blue'
+    },
+    {
       icon: Brain,
       title: 'AI Doctor Suggestions',
       description: 'Get intelligent doctor recommendations based on your symptoms using advanced machine learning algorithms.',
-      color: 'blue'
+      color: 'purple'
     },
     {
       icon: Clock,
@@ -230,12 +242,6 @@ const FeaturesSection = () => {
       icon: Shield,
       title: 'Secure & Private',
       description: 'Your health data is protected with enterprise-grade security and HIPAA-compliant encryption.',
-      color: 'purple'
-    },
-    {
-      icon: Users,
-      title: 'Expert Doctors',
-      description: 'Access verified healthcare professionals across all specialties with years of experience.',
       color: 'orange'
     },
     {
@@ -293,6 +299,108 @@ const FeaturesSection = () => {
   );
 };
 
+// Featured Hospitals Section Component - NEW
+const FeaturedHospitalsSection = () => {
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: "-100px" });
+  const navigate = useNavigate();
+  const [hospitals, setHospitals] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchFeaturedHospitals();
+  }, []);
+
+  const fetchFeaturedHospitals = async () => {
+    try {
+      const response = await hospitalsAPI.getFeaturedHospitals();
+      if (response.success) {
+        setHospitals(response.hospitals || []);
+      }
+    } catch (error) {
+      console.error('Error fetching featured hospitals:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading || hospitals.length === 0) return null;
+
+  return (
+    <section className="featured-hospitals-section" ref={ref}>
+      <div className="container">
+        <motion.div 
+          className="section-header"
+          initial={{ opacity: 0, y: 20 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6 }}
+        >
+          <h2 className="section-title">
+            Top <span className="gradient-text">Featured Hospitals</span>
+          </h2>
+          <p className="section-description">
+            Explore our network of premium healthcare facilities
+          </p>
+        </motion.div>
+
+        <div className="hospitals-carousel">
+          {hospitals.slice(0, 3).map((hospital, index) => (
+            <motion.div
+              key={hospital._id}
+              className="hospital-feature-card"
+              initial={{ opacity: 0, y: 20 }}
+              animate={isInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+              whileHover={{ y: -8, transition: { duration: 0.2 } }}
+              onClick={() => navigate(`/hospitals/${hospital._id}`)}
+            >
+              <div className="hospital-card-icon">
+                <Building2 size={32} />
+              </div>
+              
+              <h3 className="hospital-card-title">{hospital.hospitalName}</h3>
+              
+              <div className="hospital-card-location">
+                <MapPin size={16} />
+                <span>{hospital.location.address.city}</span>
+              </div>
+
+              <div className="hospital-card-stats">
+                <div className="stat">
+                  <Users size={16} />
+                  <span>{hospital.staff.totalDoctors}+ Doctors</span>
+                </div>
+                <div className="stat">
+                  <Star size={16} fill="#fbbf24" color="#fbbf24" />
+                  <span>{hospital.ratings.average.toFixed(1)}/5</span>
+                </div>
+              </div>
+
+              <button className="hospital-card-btn">
+                View Hospital
+                <ArrowRight size={16} />
+              </button>
+            </motion.div>
+          ))}
+        </div>
+
+        <motion.div 
+          className="view-all-hospitals"
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : {}}
+          transition={{ duration: 0.6, delay: 0.4 }}
+        >
+          <Link to="/hospitals" className="btn btn-primary btn-lg">
+            <Building2 size={20} />
+            View All Hospitals
+            <ArrowRight size={20} />
+          </Link>
+        </motion.div>
+      </div>
+    </section>
+  );
+};
+
 // How It Works Section Component
 const HowItWorksSection = () => {
   const ref = useRef(null);
@@ -301,26 +409,26 @@ const HowItWorksSection = () => {
   const steps = [
     {
       number: '01',
-      title: 'Create Account',
-      description: 'Sign up in seconds with your basic information. Quick, easy, and secure.',
-      icon: Users
+      title: 'Browse Hospitals',
+      description: 'Search through 100+ hospitals by location, specialty, and ratings. Find the perfect match.',
+      icon: Building2
     },
     {
       number: '02',
-      title: 'Find Your Doctor',
-      description: 'Search by specialty, location, or let our AI recommend the perfect doctor for you.',
+      title: 'Select Doctor',
+      description: 'Choose from verified doctors with detailed profiles, experience, and patient reviews.',
       icon: Stethoscope
     },
     {
       number: '03',
       title: 'Book Appointment',
-      description: 'Choose your preferred date and time slot. Get instant confirmation.',
+      description: 'Select your preferred date and time. Get instant confirmation via email and SMS.',
       icon: Calendar
     },
     {
       number: '04',
       title: 'Get Care',
-      description: 'Attend your appointment and receive quality healthcare from expert professionals.',
+      description: 'Visit the hospital and receive quality healthcare from expert professionals.',
       icon: Heart
     }
   ];
@@ -381,21 +489,21 @@ const TestimonialsSection = () => {
       role: 'Software Engineer',
       image: 'SJ',
       rating: 5,
-      text: 'The AI recommendations were spot-on! I found the perfect specialist for my condition in minutes. The booking process was seamless.'
+      text: 'Amazing platform! I found the perfect hospital and doctor in minutes. The booking process was seamless and hassle-free.'
     },
     {
       name: 'Michael Chen',
       role: 'Business Owner',
       image: 'MC',
       rating: 5,
-      text: 'Finally, a healthcare platform that actually works! No more endless phone calls and waiting. Everything is so smooth and professional.'
+      text: 'Finally, a healthcare platform that actually works! No more endless phone calls. Everything is so smooth and professional.'
     },
     {
       name: 'Emily Rodriguez',
       role: 'Teacher',
       image: 'ER',
       rating: 5,
-      text: 'I love how I can manage all my family\'s appointments in one place. The reminders are super helpful. Highly recommend!'
+      text: 'I love how I can compare hospitals and doctors all in one place. The AI recommendations were spot-on! Highly recommend!'
     }
   ];
 
@@ -475,9 +583,9 @@ const CTASection = () => {
               Create Free Account
               <ArrowRight size={20} />
             </Link>
-            <Link to="/doctors" className="btn btn-secondary btn-xl">
-              <Stethoscope size={20} />
-              Explore Doctors
+            <Link to="/hospitals" className="btn btn-secondary btn-xl">
+              <Building2 size={20} />
+              Explore Hospitals
             </Link>
           </div>
           <div className="cta-trust">

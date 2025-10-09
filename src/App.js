@@ -8,8 +8,11 @@ import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DoctorsPage from './pages/DoctorsPage';
+import HospitalsPage from './pages/HospitalsPage'; // NEW
+import HospitalDetailsPage from './pages/HospitalDetailsPage'; // NEW
 import AppointmentBookingPage from './pages/AppointmentBookingPage';
 import AdminPage from './pages/AdminPage';
+import PrivateRoute from './components/PrivateRoute';
 import './App.css';
 
 function App() {
@@ -22,21 +25,47 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            
+            {/* Hospital Routes - NEW */}
+            <Route path="/hospitals" element={<HospitalsPage />} />
+            <Route path="/hospitals/:id" element={<HospitalDetailsPage />} />
+            
+            {/* Doctor Routes */}
             <Route path="/doctors" element={<DoctorsPage />} />
-            <Route path="/book-appointment" element={<AppointmentBookingPage />} />
-            <Route path="/admin" element={<AdminPage />} />
+            
+            {/* Protected Routes */}
+            <Route 
+              path="/book-appointment" 
+              element={
+                <PrivateRoute>
+                  <AppointmentBookingPage />
+                </PrivateRoute>
+              } 
+            />
+            <Route 
+              path="/admin" 
+              element={
+                <PrivateRoute>
+                  <AdminPage />
+                </PrivateRoute>
+              } 
+            />
+            
+            {/* Catch all redirect */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
+          
           <ToastContainer
             position="top-right"
             autoClose={3000}
             hideProgressBar={false}
-            newestOnTop={false}
+            newestOnTop={true}
             closeOnClick
             rtl={false}
             pauseOnFocusLoss
             draggable
             pauseOnHover
+            theme="light"
           />
         </div>
       </Router>

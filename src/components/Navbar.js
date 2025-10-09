@@ -1,3 +1,14 @@
+import { 
+  LogOut, 
+  User, 
+  Calendar, 
+  Home, 
+  Stethoscope,
+  Building2, // ADD THIS
+  Menu, 
+  X,
+  // ... rest of imports
+} from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -47,13 +58,14 @@ const Navbar = () => {
   const isActivePath = (path) => location.pathname === path;
 
   const navItems = [
-    { path: '/', label: 'Home', icon: Home },
-    { path: '/doctors', label: 'Doctors', icon: Stethoscope },
-    ...(isAuthenticated ? [
-      { path: '/book-appointment', label: 'Book Appointment', icon: Calendar },
-      { path: '/admin', label: 'My Appointments', icon: User }
-    ] : [])
-  ];
+  { path: '/', label: 'Home', icon: Home },
+  { path: '/hospitals', label: 'Hospitals', icon: Building2 }, // NEW
+  { path: '/doctors', label: 'Doctors', icon: Stethoscope },
+  ...(isAuthenticated ? [
+    { path: '/book-appointment', label: 'Book Appointment', icon: Calendar },
+    { path: '/admin', label: 'My Appointments', icon: User }
+  ] : [])
+];
 
   const menuVariants = {
     open: {
