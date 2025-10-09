@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, useInView } from 'framer-motion';
 import { hospitalsAPI } from '../services/api';
@@ -18,32 +18,20 @@ import {
   Heart,
   Activity,
   Building2,
-  MapPin
+  MapPin,
+  Bed
 } from 'lucide-react';
 import './HomePage.css';
 
 const HomePage = () => {
   return (
     <div className="home-page">
-      {/* Hero Section */}
       <HeroSection />
-      
-      {/* Stats Section */}
       <StatsSection />
-      
-      {/* Features Section */}
       <FeaturesSection />
-      
-      {/* Featured Hospitals Section - NEW */}
       <FeaturedHospitalsSection />
-      
-      {/* How It Works Section */}
       <HowItWorksSection />
-      
-      {/* Testimonials Section */}
       <TestimonialsSection />
-      
-      {/* CTA Section */}
       <CTASection />
     </div>
   );
@@ -81,7 +69,7 @@ const HeroSection = () => {
             <span className="gradient-text">Priority</span>
             <br />
             <span className="hero-subtitle-text">
-              AI-Powered Care at Your Fingertips
+              Access All Hospitals in One Place
             </span>
           </motion.h1>
           
@@ -91,8 +79,8 @@ const HeroSection = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            Experience the future of healthcare with intelligent doctor recommendations,
-            seamless appointment booking, and comprehensive health management—all in one platform.
+            Browse hospitals across India, find expert doctors, and book appointments instantly.
+            Your one-stop healthcare aggregator platform.
           </motion.p>
           
           <motion.div 
@@ -128,7 +116,7 @@ const HeroSection = () => {
             </div>
             <div className="trust-item">
               <CheckCircle size={16} />
-              <span>10,000+ Happy Patients</span>
+              <span>98% Satisfaction Rate</span>
             </div>
           </motion.div>
         </div>
@@ -184,8 +172,8 @@ const StatsSection = () => {
 
   const stats = [
     { icon: Building2, value: '100+', label: 'Partner Hospitals' },
-    { icon: Users, value: '10,000+', label: 'Happy Patients' },
     { icon: Stethoscope, value: '500+', label: 'Expert Doctors' },
+    { icon: Calendar, value: '50,000+', label: 'Appointments Booked' },
     { icon: Award, value: '98%', label: 'Satisfaction Rate' }
   ];
 
@@ -222,38 +210,38 @@ const FeaturesSection = () => {
   const features = [
     {
       icon: Building2,
-      title: 'Multi-Hospital Network',
-      description: 'Access 100+ top hospitals across India through one unified platform. Book appointments anywhere, anytime.',
+      title: 'Multi-Hospital Access',
+      description: 'Access all major hospitals in India through one platform. Compare facilities, ratings, and book instantly.',
       color: 'blue'
     },
     {
       icon: Brain,
       title: 'AI Doctor Suggestions',
-      description: 'Get intelligent doctor recommendations based on your symptoms using advanced machine learning algorithms.',
+      description: 'Get intelligent doctor recommendations based on your symptoms using advanced AI algorithms.',
       color: 'purple'
     },
     {
       icon: Clock,
       title: 'Instant Booking',
-      description: 'Book appointments in seconds with our streamlined, user-friendly booking process. No more waiting on hold.',
+      description: 'Book appointments in seconds with our streamlined process. No more waiting on hold.',
       color: 'green'
     },
     {
       icon: Shield,
       title: 'Secure & Private',
-      description: 'Your health data is protected with enterprise-grade security and HIPAA-compliant encryption.',
-      color: 'orange'
+      description: 'Your health data is protected with enterprise-grade security and encryption.',
+      color: 'red'
     },
     {
       icon: Activity,
       title: 'Health Tracking',
-      description: 'Monitor your health metrics, appointments, and medical history all in one centralized dashboard.',
-      color: 'red'
+      description: 'Monitor your health metrics, appointments, and medical history all in one place.',
+      color: 'orange'
     },
     {
-      icon: Calendar,
-      title: 'Smart Reminders',
-      description: 'Never miss an appointment with intelligent notifications and reminder systems.',
+      icon: MapPin,
+      title: 'Location-Based Search',
+      description: 'Find hospitals and doctors near you with our smart location-based search.',
       color: 'cyan'
     }
   ];
@@ -271,8 +259,8 @@ const FeaturesSection = () => {
             Why Choose <span className="gradient-text">HealthCare Pro</span>?
           </h2>
           <p className="section-description">
-            Experience healthcare like never before with our cutting-edge features
-            designed to make your journey smooth and efficient.
+            Experience healthcare like never before with our cutting-edge platform
+            connecting you to the best hospitals and doctors.
           </p>
         </motion.div>
 
@@ -299,7 +287,7 @@ const FeaturesSection = () => {
   );
 };
 
-// Featured Hospitals Section Component - NEW
+// Featured Hospitals Section Component
 const FeaturedHospitalsSection = () => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
@@ -324,7 +312,21 @@ const FeaturedHospitalsSection = () => {
     }
   };
 
-  if (loading || hospitals.length === 0) return null;
+  if (loading) {
+    return (
+      <section className="featured-hospitals-section">
+        <div className="container">
+          <div className="section-header">
+            <h2 className="section-title">Loading Featured Hospitals...</h2>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (hospitals.length === 0) {
+    return null;
+  }
 
   return (
     <section className="featured-hospitals-section" ref={ref}>
@@ -339,7 +341,7 @@ const FeaturedHospitalsSection = () => {
             Top <span className="gradient-text">Featured Hospitals</span>
           </h2>
           <p className="section-description">
-            Explore our network of premium healthcare facilities
+            Explore our network of premium healthcare facilities across India
           </p>
         </motion.div>
 
@@ -362,7 +364,7 @@ const FeaturedHospitalsSection = () => {
               
               <div className="hospital-card-location">
                 <MapPin size={16} />
-                <span>{hospital.location.address.city}</span>
+                <span>{hospital.location.address.city}, {hospital.location.address.state}</span>
               </div>
 
               <div className="hospital-card-stats">
@@ -371,9 +373,15 @@ const FeaturedHospitalsSection = () => {
                   <span>{hospital.staff.totalDoctors}+ Doctors</span>
                 </div>
                 <div className="stat">
-                  <Star size={16} fill="#fbbf24" color="#fbbf24" />
-                  <span>{hospital.ratings.average.toFixed(1)}/5</span>
+                  <Bed size={16} />
+                  <span>{hospital.capacity.totalBeds} Beds</span>
                 </div>
+              </div>
+
+              <div className="hospital-card-rating">
+                <Star size={16} fill="#fbbf24" color="#fbbf24" />
+                <span>{hospital.ratings.average.toFixed(1)}/5</span>
+                <span className="rating-count">({hospital.ratings.totalReviews})</span>
               </div>
 
               <button className="hospital-card-btn">
@@ -410,19 +418,19 @@ const HowItWorksSection = () => {
     {
       number: '01',
       title: 'Browse Hospitals',
-      description: 'Search through 100+ hospitals by location, specialty, and ratings. Find the perfect match.',
+      description: 'Search and compare hospitals by location, specialty, and ratings.',
       icon: Building2
     },
     {
       number: '02',
-      title: 'Select Doctor',
-      description: 'Choose from verified doctors with detailed profiles, experience, and patient reviews.',
+      title: 'Find Your Doctor',
+      description: 'Browse doctors by specialty or let our AI recommend the perfect match.',
       icon: Stethoscope
     },
     {
       number: '03',
       title: 'Book Appointment',
-      description: 'Select your preferred date and time. Get instant confirmation via email and SMS.',
+      description: 'Choose your preferred date and time. Get instant confirmation.',
       icon: Calendar
     },
     {
@@ -489,21 +497,21 @@ const TestimonialsSection = () => {
       role: 'Software Engineer',
       image: 'SJ',
       rating: 5,
-      text: 'Amazing platform! I found the perfect hospital and doctor in minutes. The booking process was seamless and hassle-free.'
+      text: 'Finding the right hospital was so easy! I could compare all options in my city and book instantly. Highly recommend!'
     },
     {
       name: 'Michael Chen',
       role: 'Business Owner',
       image: 'MC',
       rating: 5,
-      text: 'Finally, a healthcare platform that actually works! No more endless phone calls. Everything is so smooth and professional.'
+      text: 'Finally, a platform that aggregates all hospitals! No more endless searching. Everything I need in one place.'
     },
     {
       name: 'Emily Rodriguez',
       role: 'Teacher',
       image: 'ER',
       rating: 5,
-      text: 'I love how I can compare hospitals and doctors all in one place. The AI recommendations were spot-on! Highly recommend!'
+      text: 'Managing my family\'s healthcare has never been easier. Love the multi-hospital feature!'
     }
   ];
 
