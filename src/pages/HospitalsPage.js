@@ -35,6 +35,7 @@ const HospitalDetailsPage = () => {
 
   useEffect(() => {
     fetchHospitalDetails();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const fetchHospitalDetails = async () => {
@@ -261,37 +262,43 @@ const HospitalDetailsPage = () => {
               transition={{ duration: 0.5 }}
             >
               <h2 className="section-title">Our Expert Doctors</h2>
-              <div className="doctors-list">
-                {doctors.map((doctor, index) => (
-                  <motion.div 
-                    key={doctor._id}
-                    className="doctor-item"
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.5, delay: index * 0.1 }}
-                  >
-                    <div className="doctor-avatar">
-                      {doctor.name.split(' ').map(n => n[0]).join('')}
-                    </div>
-                    <div className="doctor-info">
-                      <h3 className="doctor-name">{doctor.name}</h3>
-                      <p className="doctor-specialty">{doctor.specialty}</p>
-                      <div className="doctor-meta">
-                        <span>{doctor.experience} years exp.</span>
-                        <span className="separator">•</span>
-                        <span>₹{doctor.consultationFee}</span>
-                      </div>
-                    </div>
-                    <button 
-                      onClick={() => handleBookDoctor(doctor)}
-                      className="btn btn-primary"
+              {doctors.length === 0 ? (
+                <div className="no-doctors">
+                  <p>No doctors currently available at this hospital.</p>
+                </div>
+              ) : (
+                <div className="doctors-list">
+                  {doctors.map((doctor, index) => (
+                    <motion.div 
+                      key={doctor._id}
+                      className="doctor-item"
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.5, delay: index * 0.1 }}
                     >
-                      <Calendar size={16} />
-                      Book Now
-                    </button>
-                  </motion.div>
-                ))}
-              </div>
+                      <div className="doctor-avatar">
+                        {doctor.name.split(' ').map(n => n[0]).join('')}
+                      </div>
+                      <div className="doctor-info">
+                        <h3 className="doctor-name">{doctor.name}</h3>
+                        <p className="doctor-specialty">{doctor.specialty}</p>
+                        <div className="doctor-meta">
+                          <span>{doctor.experience} years exp.</span>
+                          <span className="separator">•</span>
+                          <span>₹{doctor.consultationFee}</span>
+                        </div>
+                      </div>
+                      <button 
+                        onClick={() => handleBookDoctor(doctor)}
+                        className="btn btn-primary"
+                      >
+                        <Calendar size={16} />
+                        Book Now
+                      </button>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
             </motion.div>
           )}
 
@@ -403,7 +410,7 @@ const HospitalDetailsPage = () => {
                     </div>
                     <div className="contact-details">
                       <h4>Website</h4>
-                      <a href={hospital.contactInfo.website} target="_blank" rel="noopener noreferrer">
+                      <a href={`https://${hospital.contactInfo.website}`} target="_blank" rel="noopener noreferrer">
                         {hospital.contactInfo.website}
                       </a>
                     </div>

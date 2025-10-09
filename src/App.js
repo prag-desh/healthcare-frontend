@@ -9,7 +9,6 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import DoctorsPage from './pages/DoctorsPage';
 import HospitalsPage from './pages/HospitalsPage'; // NEW
-import HospitalDetailsPage from './pages/HospitalDetailsPage'; // NEW
 import AppointmentBookingPage from './pages/AppointmentBookingPage';
 import AdminPage from './pages/AdminPage';
 import PrivateRoute from './components/PrivateRoute';
@@ -26,9 +25,8 @@ function App() {
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             
-            {/* Hospital Routes - NEW */}
+            {/* Hospital Routes - NEW (Details page disabled for now) */}
             <Route path="/hospitals" element={<HospitalsPage />} />
-            <Route path="/hospitals/:id" element={<HospitalDetailsPage />} />
             
             {/* Doctor Routes */}
             <Route path="/doctors" element={<DoctorsPage />} />
