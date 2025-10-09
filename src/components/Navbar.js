@@ -1,370 +1,231 @@
+import React, { useState, useContext, useEffect, useRef } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { AuthContext } from '../context/AuthContext';
 import { 
   LogOut, 
   User, 
   Calendar, 
   Home, 
   Stethoscope,
-  Building2, // ADD THIS
+  Building2,
   Menu, 
   X,
-  // ... rest of imports
-} from 'lucide-react';
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useAuth } from '../context/AuthContext';
-import { 
-  LogOut, 
-  User, 
-  Calendar, 
-  Home, 
-  Stethoscope, 
-  Menu, 
-  X,
-  ChevronDown,
   Bell,
   Settings,
-  Activity
+  ChevronDown
 } from 'lucide-react';
 import './Navbar.css';
 
 const Navbar = () => {
-  const { user, logout, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, logout } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  const dropdownRef = useRef(null);
+
+  const navItems = [
+    { path: '/', label: 'Home', icon: Home },
+    { path: '/hospitals', label: 'Hospitals', icon: Building2 },
+    { path: '/doctors', label: 'Doctors', icon: Stethoscope },
+    ...(isAuthenticated ? [
+      { path: '/book-appointment', label: 'Book Appointment', icon: Calendar },
+      { path: '/admin', label: 'My Appointments', icon: User }
+    ] : [])
+  ];
 
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 10);
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowProfileDropdown(false);
+      }
     };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   useEffect(() => {
-    setIsMenuOpen(false);
-    setIsProfileOpen(false);
+    setIsMobileMenuOpen(false);
+    setShowProfileDropdown(false);
   }, [location]);
 
   const handleLogout = () => {
     logout();
+    setShowProfileDropdown(false);
     navigate('/login');
   };
 
-  const isActivePath = (path) => location.pathname === path;
-
-  const navItems = [
-  { path: '/', label: 'Home', icon: Home },
-  { path: '/hospitals', label: 'Hospitals', icon: Building2 }, // NEW
-  { path: '/doctors', label: 'Doctors', icon: Stethoscope },
-  ...(isAuthenticated ? [
-    { path: '/book-appointment', label: 'Book Appointment', icon: Calendar },
-    { path: '/admin', label: 'My Appointments', icon: User }
-  ] : [])
-];
-
-  const menuVariants = {
-    open: {
-      opacity: 1,
-      x: 0,
-      transition: {
-        type: "spring",
-        stiffness: 300,
-        damping: 24
-      }
-    },
-    closed: {
-      opacity: 0,
-      x: "-100%",
-      transition: {
-        duration: 0.2
-      }
-    }
-  };
-
-  const profileVariants = {
-    open: {
-      opacity: 1,
-      y: 0,
-      scale: 1,
-      transition: {
-        type: "spring",
-        duration: 0.2
-      }
-    },
-    closed: {
-      opacity: 0,
-      y: -10,
-      scale: 0.95,
-      transition: {
-        duration: 0.1
-      }
-    }
+  const isActivePath = (path) => {
+    return location.pathname === path;
   };
 
   return (
-    <motion.nav 
-      className={`navbar ${scrolled ? 'navbar-scrolled' : ''}`}
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      transition={{ type: "spring", stiffness: 300, damping: 30 }}
-    >
-      <div className="container navbar-container">
-        {/* Logo */}
+    <nav className="navbar">
+      <div className="navbar-container">
         <Link to="/" className="navbar-brand">
           <motion.div 
-            className="brand-icon-wrapper"
-            whileHover={{ rotate: 360 }}
-            transition={{ duration: 0.6 }}
+            className="brand-icon"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
           >
-            <Activity className="brand-icon" />
+            <Stethoscope size={28} />
           </motion.div>
-          <div className="brand-text">
-            <span className="brand-name">HealthCare</span>
-            <span className="brand-subtitle">Pro</span>
-          </div>
+          <span className="brand-text">HealthCare<span className="brand-highlight">Pro</span></span>
         </Link>
 
-        {/* Desktop Navigation */}
-        <div className="navbar-menu desktop-only">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            return (
-              <Link 
+        <div className="navbar-desktop">
+          <div className="nav-links">
+            {navItems.map((item) => (
+              <Link
                 key={item.path}
-                to={item.path} 
-                className={`nav-link ${isActivePath(item.path) ? 'nav-link-active' : ''}`}
+                to={item.path}
+                className={`nav-link ${isActivePath(item.path) ? 'active' : ''}`}
               >
-                <Icon size={18} />
+                <item.icon size={18} />
                 <span>{item.label}</span>
                 {isActivePath(item.path) && (
                   <motion.div
-                    className="nav-link-indicator"
-                    layoutId="activeTab"
-                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                    className="active-indicator"
+                    layoutId="activeIndicator"
+                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
                   />
                 )}
               </Link>
-            );
-          })}
-        </div>
+            ))}
+          </div>
 
-        {/* Desktop Auth Section */}
-        <div className="navbar-actions desktop-only">
-          {isAuthenticated ? (
-            <div className="nav-user">
-              <button className="notification-btn">
-                <Bell size={20} />
-                <span className="notification-badge">2</span>
-              </button>
-              
-              <div className="profile-dropdown">
-                <button
-                  onClick={() => setIsProfileOpen(!isProfileOpen)}
-                  className="profile-trigger"
-                >
-                  <div className="user-avatar">
-                    {user?.firstName?.[0]}{user?.lastName?.[0]}
-                  </div>
-                  <div className="user-info">
-                    <span className="user-name">
-                      {user?.firstName} {user?.lastName}
-                    </span>
-                    <span className="user-email">{user?.email}</span>
-                  </div>
-                  <ChevronDown 
-                    size={16} 
-                    className={`chevron ${isProfileOpen ? 'chevron-open' : ''}`} 
-                  />
+          <div className="nav-actions">
+            {isAuthenticated ? (
+              <>
+                <button className="notification-btn">
+                  <Bell size={20} />
+                  <span className="notification-badge">3</span>
                 </button>
 
-                <AnimatePresence>
-                  {isProfileOpen && (
-                    <motion.div
-                      className="profile-menu"
-                      variants={profileVariants}
-                      initial="closed"
-                      animate="open"
-                      exit="closed"
-                    >
-                      <div className="profile-menu-header">
-                        <div className="user-avatar large">
-                          {user?.firstName?.[0]}{user?.lastName?.[0]}
-                        </div>
-                        <div>
-                          <div className="profile-name">
-                            {user?.firstName} {user?.lastName}
-                          </div>
-                          <div className="profile-email">{user?.email}</div>
-                        </div>
-                      </div>
-                      
-                      <div className="profile-menu-divider" />
-                      
-                      <Link to="/profile" className="profile-menu-item">
-                        <User size={16} />
-                        <span>View Profile</span>
-                      </Link>
-                      
-                      <Link to="/settings" className="profile-menu-item">
-                        <Settings size={16} />
-                        <span>Settings</span>
-                      </Link>
-                      
-                      <div className="profile-menu-divider" />
-                      
-                      <button onClick={handleLogout} className="profile-menu-item logout-item">
-                        <LogOut size={16} />
-                        <span>Sign Out</span>
-                      </button>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            </div>
-          ) : (
-            <div className="auth-buttons">
-              <Link to="/login" className="btn btn-ghost">
-                Sign In
-              </Link>
-              <Link to="/register" className="btn btn-primary">
-                Get Started
-              </Link>
-            </div>
-          )}
+                <div className="profile-dropdown" ref={dropdownRef}>
+                  <button 
+                    className="profile-trigger"
+                    onClick={() => setShowProfileDropdown(!showProfileDropdown)}
+                  >
+                    <div className="profile-avatar">
+                      {user?.firstName?.[0]}{user?.lastName?.[0]}
+                    </div>
+                    <div className="profile-info">
+                      <span className="profile-name">{user?.firstName} {user?.lastName}</span>
+                      <span className="profile-role">Patient</span>
+                    </div>
+                    <ChevronDown size={16} className={showProfileDropdown ? 'rotate' : ''} />
+                  </button>
+
+                  <AnimatePresence>
+                    {showProfileDropdown && (
+                      <motion.div
+                        className="dropdown-menu"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 10 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <Link to="/admin" className="dropdown-item">
+                          <User size={16} />
+                          <span>My Profile</span>
+                        </Link>
+                        <Link to="/admin" className="dropdown-item">
+                          <Calendar size={16} />
+                          <span>My Appointments</span>
+                        </Link>
+                        <Link to="/settings" className="dropdown-item">
+                          <Settings size={16} />
+                          <span>Settings</span>
+                        </Link>
+                        <div className="dropdown-divider"></div>
+                        <button onClick={handleLogout} className="dropdown-item logout">
+                          <LogOut size={16} />
+                          <span>Logout</span>
+                        </button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </>
+            ) : (
+              <>
+                <Link to="/login" className="btn btn-secondary">
+                  Login
+                </Link>
+                <Link to="/register" className="btn btn-primary">
+                  Sign Up
+                </Link>
+              </>
+            )}
+          </div>
         </div>
 
-        {/* Mobile Menu Button */}
-        <button
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-          className="mobile-menu-btn mobile-only"
+        <button 
+          className="mobile-menu-btn"
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           aria-label="Toggle menu"
         >
-          <AnimatePresence mode="wait">
-            {isMenuOpen ? (
-              <motion.div
-                key="close"
-                initial={{ rotate: -90, opacity: 0 }}
-                animate={{ rotate: 0, opacity: 1 }}
-                exit={{ rotate: 90, opacity: 0 }}
-                transition={{ duration: 0.2 }}
-              >
-                <X size={24} />
-              </motion.div>
-            ) : (
-              <motion.div
-                key="menu"
-                initial={{ rotate: 90, opacity: 0 }}
-                animate={{ rotate: 0, opacity: 1 }}
-                exit={{ rotate: -90, opacity: 0 }}
-                transition={{ duration: 0.2 }}
-              >
-                <Menu size={24} />
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
-
-        {/* Mobile Menu */}
-        <AnimatePresence>
-          {isMenuOpen && (
-            <motion.div
-              className="mobile-menu"
-              variants={menuVariants}
-              initial="closed"
-              animate="open"
-              exit="closed"
-            >
-              <div className="mobile-menu-content">
-                {/* Mobile Navigation Links */}
-                <div className="mobile-nav-section">
-                  {navItems.map((item) => {
-                    const Icon = item.icon;
-                    return (
-                      <Link 
-                        key={item.path}
-                        to={item.path} 
-                        className={`mobile-nav-link ${isActivePath(item.path) ? 'active' : ''}`}
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        <Icon size={20} />
-                        <span>{item.label}</span>
-                      </Link>
-                    );
-                  })}
-                </div>
-
-                {/* Mobile User Section */}
-                {isAuthenticated ? (
-                  <div className="mobile-user-section">
-                    <div className="mobile-user-info">
-                      <div className="user-avatar">
-                        {user?.firstName?.[0]}{user?.lastName?.[0]}
-                      </div>
-                      <div>
-                        <div className="user-name">
-                          {user?.firstName} {user?.lastName}
-                        </div>
-                        <div className="user-email">{user?.email}</div>
-                      </div>
-                    </div>
-                    
-                    <div className="mobile-user-actions">
-                      <Link to="/profile" className="mobile-action-btn">
-                        <User size={18} />
-                        <span>Profile</span>
-                      </Link>
-                      <Link to="/settings" className="mobile-action-btn">
-                        <Settings size={18} />
-                        <span>Settings</span>
-                      </Link>
-                      <button onClick={handleLogout} className="mobile-action-btn logout">
-                        <LogOut size={18} />
-                        <span>Sign Out</span>
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="mobile-auth-section">
-                    <Link 
-                      to="/login" 
-                      className="btn btn-secondary btn-full mb-3"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      Sign In
-                    </Link>
-                    <Link 
-                      to="/register" 
-                      className="btn btn-primary btn-full"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      Get Started
-                    </Link>
-                  </div>
-                )}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </div>
 
-      {/* Mobile Menu Overlay */}
       <AnimatePresence>
-        {isMenuOpen && (
+        {isMobileMenuOpen && (
           <motion.div
-            className="mobile-menu-overlay mobile-only"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setIsMenuOpen(false)}
-          />
+            className="mobile-menu"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div className="mobile-nav-links">
+              {navItems.map((item) => (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className={`mobile-nav-link ${isActivePath(item.path) ? 'active' : ''}`}
+                >
+                  <item.icon size={20} />
+                  <span>{item.label}</span>
+                </Link>
+              ))}
+            </div>
+
+            <div className="mobile-nav-actions">
+              {isAuthenticated ? (
+                <>
+                  <div className="mobile-profile">
+                    <div className="profile-avatar">
+                      {user?.firstName?.[0]}{user?.lastName?.[0]}
+                    </div>
+                    <div className="profile-info">
+                      <span className="profile-name">{user?.firstName} {user?.lastName}</span>
+                      <span className="profile-email">{user?.email}</span>
+                    </div>
+                  </div>
+                  <button onClick={handleLogout} className="btn btn-secondary btn-full">
+                    <LogOut size={18} />
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link to="/login" className="btn btn-secondary btn-full">
+                    Login
+                  </Link>
+                  <Link to="/register" className="btn btn-primary btn-full">
+                    Sign Up
+                  </Link>
+                </>
+              )}
+            </div>
+          </motion.div>
         )}
       </AnimatePresence>
-    </motion.nav>
+    </nav>
   );
 };
 
