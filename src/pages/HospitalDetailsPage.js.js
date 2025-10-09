@@ -39,22 +39,22 @@ const HospitalDetailsPage = () => {
   }, [id]);
 
   const fetchHospitalDetails = async () => {
-    try {
-      setLoading(true);
-      const response = await hospitalsAPI.getHospitalById(id);
-      
-      if (response.success) {
-        setHospital(response.hospital);
-        setDoctors(response.doctors || []);
-      }
-    } catch (error) {
-      console.error('Error fetching hospital details:', error);
-      toast.error('Failed to load hospital details');
-      navigate('/hospitals');
-    } finally {
-      setLoading(false);
+  try {
+    setLoading(true);
+    const response = await hospitalsAPI.getHospitalById(id);
+    
+    if (response.success) {
+      setHospital(response.hospital);
+      setDoctors(response.doctors || []);
     }
-  };
+  } catch (error) {
+    console.error('Error fetching hospital details:', error);
+    // Show error in console but keep trying
+    setTimeout(fetchHospitalDetails, 2000); // Retry after 2 seconds
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleBookDoctor = (doctor) => {
     navigate('/book-appointment', { 
