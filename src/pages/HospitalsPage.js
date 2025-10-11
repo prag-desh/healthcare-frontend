@@ -259,7 +259,6 @@ const HospitalsPage = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.05 }}
                 whileHover={{ y: -8, transition: { duration: 0.2 } }}
-                onClick={() => handleHospitalClick(hospital._id)}
               >
                 <div className="hospital-card-header">
                   <div className="hospital-type-badge">
@@ -304,7 +303,10 @@ const HospitalsPage = () => {
                 </div>
 
                 <div className="hospital-card-footer">
-                  <button className="btn btn-primary btn-full">
+                  <button 
+                    onClick={() => handleHospitalClick(hospital._id)}
+                    className="btn btn-primary btn-full"
+                  >
                     View Details
                     <ArrowRight size={18} />
                   </button>
