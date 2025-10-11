@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 import { doctorsAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import LoadingSpinner from '../components/LoadingSpinner';
-import { Calendar, User, FileText } from 'lucide-react';
+import { Calendar, User, FileText, Building2 } from 'lucide-react';
 import './AppointmentBookingPage.css';
 
 const AppointmentBookingPage = () => {
@@ -16,6 +16,7 @@ const AppointmentBookingPage = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [selectedDoctor, setSelectedDoctor] = useState(null);
+  const [selectedHospital, setSelectedHospital] = useState(null);
   
   const [formData, setFormData] = useState({
     doctorId: '',
@@ -23,6 +24,8 @@ const AppointmentBookingPage = () => {
     specialty: '',
     experience: 0,
     fee: 0,
+    hospitalId: '',
+    hospitalName: '',
     appointmentDate: '',
     timeSlot: '',
     reasonForVisit: ''
@@ -43,9 +46,20 @@ const AppointmentBookingPage = () => {
 
     fetchDoctors();
 
+    // Get selected doctor and hospital from navigation state
     if (location.state?.selectedDoctor) {
       const doctor = location.state.selectedDoctor;
       handleDoctorSelection(doctor);
+    }
+
+    if (location.state?.selectedHospital) {
+      const hospital = location.state.selectedHospital;
+      setSelectedHospital(hospital);
+      setFormData(prev => ({
+        ...prev,
+        hospitalId: hospital._id,
+        hospitalName: hospital.hospitalName
+      }));
     }
   }, [isAuthenticated, navigate, location.state]);
 
@@ -116,6 +130,8 @@ const AppointmentBookingPage = () => {
         specialty: formData.specialty,
         experience: formData.experience,
         fee: formData.fee,
+        hospitalId: formData.hospitalId,
+        hospitalName: formData.hospitalName,
         appointmentDate: formData.appointmentDate,
         timeSlot: formData.timeSlot,
         reasonForVisit: formData.reasonForVisit
@@ -172,6 +188,16 @@ const AppointmentBookingPage = () => {
                 <p><strong>Email:</strong> {user?.email}</p>
               </div>
             </div>
+
+            {selectedHospital && (
+              <div className="form-section">
+                <h3><Building2 size={20} /> Hospital</h3>
+                <div className="selected-hospital-info">
+                  <p><strong>{selectedHospital.hospitalName}</strong></p>
+                  <p>{selectedHospital.location?.address?.city}, {selectedHospital.location?.address?.state}</p>
+                </div>
+              </div>
+            )}
 
             <div className="form-section">
               <h3><User size={20} /> Select Doctor</h3>
