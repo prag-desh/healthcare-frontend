@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { appointmentsAPI, doctorsAPI } from '../services/api';
-import { useAuth } from '../context/AuthContext';
+import { doctorsAPI } from '../services/api';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { Calendar, User, FileText } from 'lucide-react';
 import './AppointmentBookingPage.css';
@@ -10,7 +9,6 @@ import './AppointmentBookingPage.css';
 const AppointmentBookingPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, isAuthenticated } = useAuth();
   
   const [doctors, setDoctors] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -18,34 +16,31 @@ const AppointmentBookingPage = () => {
   const [selectedDoctor, setSelectedDoctor] = useState(null);
   
   const [formData, setFormData] = useState({
+    patientName: '',
+    patientEmail: '',
     doctorId: '',
     doctorName: '',
     specialty: '',
+    experience: 0,
+    fee: 0,
     appointmentDate: '',
     timeSlot: '',
-    reason: '',
-    symptoms: ''
+    reasonForVisit: ''
   });
 
   const timeSlots = [
-    '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
-    '14:00', '14:30', '15:00', '15:30', '16:00', '16:30'
+    '09:00 AM', '09:30 AM', '10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM',
+    '12:00 PM', '02:00 PM', '02:30 PM', '03:00 PM', '03:30 PM', '04:00 PM', '04:30 PM'
   ];
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      toast.error('Please login to book an appointment');
-      navigate('/login');
-      return;
-    }
-
     fetchDoctors();
 
     if (location.state?.selectedDoctor) {
       const doctor = location.state.selectedDoctor;
       handleDoctorSelection(doctor);
     }
-  }, [isAuthenticated, navigate, location.state]);
+  }, [location.state]);
 
   const fetchDoctors = async () => {
     try {
@@ -67,7 +62,9 @@ const AppointmentBookingPage = () => {
       ...prev,
       doctorId: doctor._id,
       doctorName: doctor.name,
-      specialty: doctor.specialty
+      specialty: doctor.specialty,
+      experience: doctor.experience,
+      fee: doctor.consultationFee
     }));
   };
 
@@ -89,27 +86,73 @@ const AppointmentBookingPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!formData.doctorId || !formData.appointmentDate || !formData.timeSlot || !formData.reason) {
+    // Validation
+    if (!formData.patientName || !formData.patientEmail || !formData.doctorId || !formData.appointmentDate || !formData.timeSlot || !formData.reasonForVisit) {
       toast.error('Please fill in all required fields');
       return;
     }
 
-    if (formData.reason.length < 10) {
-      toast.error('Please provide a more detailed reason');
+    if (formData.reasonForVisit.length < 10) {
+      toast.error('Reason for visit must be at least 10 characters');
+      return;
+    }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.patientEmail)) {
+      toast.error('Please enter a valid email address');
       return;
     }
 
     try {
       setSubmitting(true);
-      const response = await appointmentsAPI.bookAppointment(formData);
 
-      if (response.success) {
-        toast.success('Appointment booked successfully!');
-        navigate('/admin');
+      // Direct API call to public booking endpoint
+      const response = await fetch('https://healthcare-appointment-api.onrender.com/api/appointments/book', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          patientName: formData.patientName,
+          patientEmail: formData.patientEmail,
+          doctorId: formData.doctorId,
+          doctorName: formData.doctorName,
+          specialty: formData.specialty,
+          experience: formData.experience,
+          fee: formData.fee,
+          appointmentDate: formData.appointmentDate,
+          timeSlot: formData.timeSlot,
+          reasonForVisit: formData.reasonForVisit
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast.success('✅ ' + data.message);
+        // Reset form
+        setFormData({
+          patientName: '',
+          patientEmail: '',
+          doctorId: '',
+          doctorName: '',
+          specialty: '',
+          experience: 0,
+          fee: 0,
+          appointmentDate: '',
+          timeSlot: '',
+          reasonForVisit: ''
+        });
+        setSelectedDoctor(null);
+        // Redirect to home or confirmation page
+        setTimeout(() => navigate('/'), 2000);
+      } else {
+        toast.error('❌ ' + data.message);
       }
     } catch (error) {
       console.error('Booking error:', error);
-      toast.error(error.response?.data?.message || 'Failed to book appointment');
+      toast.error('Failed to book appointment. Please try again.');
     } finally {
       setSubmitting(false);
     }
@@ -136,9 +179,32 @@ const AppointmentBookingPage = () => {
           <form onSubmit={handleSubmit} className="booking-form">
             <div className="form-section">
               <h3><User size={20} /> Patient Information</h3>
-              <div className="patient-info">
-                <p><strong>Name:</strong> {user?.firstName} {user?.lastName}</p>
-                <p><strong>Email:</strong> {user?.email}</p>
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Name *</label>
+                  <input
+                    type="text"
+                    name="patientName"
+                    value={formData.patientName}
+                    onChange={handleInputChange}
+                    placeholder="Enter your full name"
+                    className="form-input"
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Email *</label>
+                  <input
+                    type="email"
+                    name="patientEmail"
+                    value={formData.patientEmail}
+                    onChange={handleInputChange}
+                    placeholder="Enter your email"
+                    className="form-input"
+                    required
+                  />
+                </div>
               </div>
             </div>
 
@@ -212,8 +278,8 @@ const AppointmentBookingPage = () => {
               <div className="form-group">
                 <label>Describe your symptoms or reason *</label>
                 <textarea
-                  name="reason"
-                  value={formData.reason}
+                  name="reasonForVisit"
+                  value={formData.reasonForVisit}
                   onChange={handleInputChange}
                   placeholder="Please describe your concerns..."
                   className="form-textarea"
