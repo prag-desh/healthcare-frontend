@@ -1,15 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { appointmentsAPI } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import LoadingSpinner from '../components/LoadingSpinner';
-import { Calendar, Clock, FileText, X } from 'lucide-react';
+import { Calendar, Clock, FileText, User } from 'lucide-react';
 import './AdminPage.css';
 
 const AdminPage = () => {
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
@@ -22,15 +21,24 @@ const AdminPage = () => {
     }
 
     fetchAppointments();
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, navigate, user]);
 
   const fetchAppointments = async () => {
     try {
       setLoading(true);
-      const response = await appointmentsAPI.getAppointments();
       
-      if (response.success) {
-        setAppointments(response.appointments || []);
+      // Fetch all appointments
+      const response = await fetch('https://healthcare-appointment-api.onrender.com/api/appointments/all');
+      const data = await response.json();
+      
+      if (data.success) {
+        // Filter appointments by logged-in user's email
+        const userAppointments = data.appointments.filter(
+          apt => apt.patientEmail?.toLowerCase() === user?.email?.toLowerCase()
+        );
+        setAppointments(userAppointments || []);
+      } else {
+        toast.error('Failed to load appointments');
       }
     } catch (error) {
       console.error('Error fetching appointments:', error);
@@ -40,28 +48,24 @@ const AdminPage = () => {
     }
   };
 
-  const handleCancelAppointment = async (appointmentId) => {
-    if (!window.confirm('Are you sure you want to cancel this appointment?')) {
-      return;
-    }
-
-    try {
-      const response = await appointmentsAPI.cancelAppointment(appointmentId);
-      
-      if (response.success) {
-        toast.success('Appointment cancelled successfully');
-        fetchAppointments();
-      }
-    } catch (error) {
-      console.error('Error cancelling appointment:', error);
-      toast.error(error.response?.data?.message || 'Failed to cancel appointment');
-    }
-  };
-
   const filteredAppointments = appointments.filter(apt => {
     if (filter === 'all') return true;
     return apt.status === filter;
   });
+
+  const formatDate = (dateString) => {
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    } catch (error) {
+      return 'Invalid Date';
+    }
+  };
 
   if (loading) {
     return <LoadingSpinner message="Loading appointments..." />;
@@ -112,7 +116,7 @@ const AdminPage = () => {
                 <div className="appointment-header">
                   <div>
                     <h3>{appointment.doctorName}</h3>
-                    <p className="specialty">{appointment.specialty}</p>
+                    <p className="specialty">{appointment.specialty || 'General'}</p>
                   </div>
                   <span className={`status-badge ${appointment.status}`}>
                     {appointment.status}
@@ -122,12 +126,7 @@ const AdminPage = () => {
                 <div className="appointment-details">
                   <div className="detail-item">
                     <Calendar size={18} />
-                    <span>{new Date(appointment.appointmentDate).toLocaleDateString('en-US', {
-                      weekday: 'long',
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    })}</span>
+                    <span>{formatDate(appointment.appointmentDate)}</span>
                   </div>
 
                   <div className="detail-item">
@@ -137,21 +136,19 @@ const AdminPage = () => {
 
                   <div className="detail-item">
                     <FileText size={18} />
-                    <span>{appointment.reason}</span>
+                    <span>{appointment.reasonForVisit || appointment.reason || 'No reason provided'}</span>
                   </div>
+
+                  {appointment.fee && (
+                    <div className="detail-item">
+                      <span><strong>Consultation Fee:</strong> ₹{appointment.fee}</span>
+                    </div>
+                  )}
                 </div>
 
-                {appointment.status === 'scheduled' && (
-                  <div className="appointment-actions">
-                    <button
-                      onClick={() => handleCancelAppointment(appointment._id)}
-                      className="btn-cancel"
-                    >
-                      <X size={18} />
-                      Cancel Appointment
-                    </button>
-                  </div>
-                )}
+                <div className="appointment-footer">
+                  <small>Booked on: {new Date(appointment.createdAt).toLocaleString()}</small>
+                </div>
               </div>
             ))}
           </div>
