@@ -1,609 +1,323 @@
-import React, { useRef, useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { motion, useInView } from 'framer-motion';
-import { hospitalsAPI } from '../services/api';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { 
+  Search, 
+  MapPin, 
   Calendar, 
-  Stethoscope, 
-  Brain, 
-  Clock, 
+  Users, 
+  Building2, 
+  Heart, 
   Shield, 
-  Users,
-  ArrowRight,
-  CheckCircle,
-  Star,
+  Clock,
   TrendingUp,
   Award,
-  Zap,
-  Heart,
+  ArrowRight,
+  Stethoscope,
   Activity,
-  Building2,
-  MapPin,
-  Bed
+  Zap
 } from 'lucide-react';
+import ScrollProgressBar from '../components/ScrollProgressBar';
+import ParticleBackground from '../components/ParticleBackground';
+import useCountUp from '../hooks/useCountUp';
+import { initParallax } from '../utils/parallax';
 import './HomePage.css';
 
+const AnimatedStat = ({ icon: Icon, label, value, color }) => {
+  const numericValue = parseInt(value.replace(/[^0-9]/g, ''));
+  const suffix = value.replace(/[0-9]/g, '');
+  const [count, countRef] = useCountUp(numericValue, 2500);
+
+  return (
+    <motion.div
+      ref={countRef}
+      className="stat-card"
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.5 }}
+      whileHover={{ 
+        y: -5,
+        rotateY: 5,
+        transition: { duration: 0.2 }
+      }}
+      style={{ perspective: '1000px' }}
+    >
+      <div className="stat-icon" style={{ background: `linear-gradient(135deg, ${color}, ${color}dd)` }}>
+        <Icon size={28} color="white" />
+      </div>
+      <div className="stat-content">
+        <div className="stat-value">{count}{suffix}</div>
+        <div className="stat-label">{label}</div>
+      </div>
+    </motion.div>
+  );
+};
+
 const HomePage = () => {
-  return (
-    <div className="home-page">
-      <HeroSection />
-      <StatsSection />
-      <FeaturesSection />
-      <FeaturedHospitalsSection />
-      <HowItWorksSection />
-      <TestimonialsSection />
-      <CTASection />
-    </div>
-  );
-};
-
-// Hero Section Component
-const HeroSection = () => {
-  return (
-    <section className="hero-section">
-      <div className="hero-background">
-        <div className="hero-gradient-1"></div>
-        <div className="hero-gradient-2"></div>
-        <div className="hero-pattern"></div>
-      </div>
-      
-      <div className="container">
-        <div className="hero-content">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            className="hero-badge"
-          >
-            <Zap size={16} />
-            <span>AI-Powered Healthcare Platform</span>
-          </motion.div>
-
-          <motion.h1 
-            className="hero-title"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-          >
-            Your Health, Our{' '}
-            <span className="gradient-text">Priority</span>
-            <br />
-            <span className="hero-subtitle-text">
-              Access All Hospitals in One Place
-            </span>
-          </motion.h1>
-          
-          <motion.p 
-            className="hero-description"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
-            Browse hospitals across India, find expert doctors, and book appointments instantly.
-            Your one-stop healthcare aggregator platform.
-          </motion.p>
-          
-          <motion.div 
-            className="hero-actions"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3 }}
-          >
-            <Link to="/hospitals" className="btn btn-primary btn-xl">
-              <Building2 size={20} />
-              Find Hospitals
-              <ArrowRight size={20} />
-            </Link>
-            <Link to="/doctors" className="btn btn-secondary btn-xl">
-              <Stethoscope size={20} />
-              Find Doctors
-            </Link>
-          </motion.div>
-
-          <motion.div 
-            className="hero-trust"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-          >
-            <div className="trust-item">
-              <CheckCircle size={16} />
-              <span>500+ Verified Doctors</span>
-            </div>
-            <div className="trust-item">
-              <CheckCircle size={16} />
-              <span>100+ Top Hospitals</span>
-            </div>
-            <div className="trust-item">
-              <CheckCircle size={16} />
-              <span>98% Satisfaction Rate</span>
-            </div>
-          </motion.div>
-        </div>
-
-        <motion.div 
-          className="hero-image"
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-        >
-          <div className="hero-card card-1">
-            <div className="card-icon">
-              <Heart />
-            </div>
-            <div className="card-content">
-              <div className="card-label">Health Score</div>
-              <div className="card-value">98%</div>
-            </div>
-            <div className="card-chart">
-              <TrendingUp size={16} />
-            </div>
-          </div>
-
-          <div className="hero-card card-2">
-            <div className="card-icon success">
-              <CheckCircle />
-            </div>
-            <div className="card-content">
-              <div className="card-label">Appointment Confirmed</div>
-              <div className="card-meta">Dr. Sarah Johnson</div>
-            </div>
-          </div>
-
-          <div className="hero-card card-3">
-            <div className="card-icon warning">
-              <Clock />
-            </div>
-            <div className="card-content">
-              <div className="card-label">Next Checkup</div>
-              <div className="card-meta">In 2 days</div>
-            </div>
-          </div>
-        </motion.div>
-      </div>
-    </section>
-  );
-};
-
-// Stats Section Component
-const StatsSection = () => {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState('');
+  
+  // Initialize Parallax Effect
+  useEffect(() => {
+    const cleanup = initParallax();
+    return cleanup;
+  }, []);
 
   const stats = [
-    { icon: Building2, value: '100+', label: 'Partner Hospitals' },
-    { icon: Stethoscope, value: '500+', label: 'Expert Doctors' },
-    { icon: Calendar, value: '50,000+', label: 'Appointments Booked' },
-    { icon: Award, value: '98%', label: 'Satisfaction Rate' }
+    { icon: Building2, label: 'Hospitals', value: '28+', color: '#0066FF' },
+    { icon: Users, label: 'Doctors', value: '84+', color: '#00D9C0' },
+    { icon: Calendar, label: 'Appointments', value: '500+', color: '#FF6B6B' },
+    { icon: Heart, label: 'Happy Patients', value: '1000+', color: '#10B981' }
   ];
-
-  return (
-    <section className="stats-section" ref={ref}>
-      <div className="container">
-        <div className="stats-grid">
-          {stats.map((stat, index) => (
-            <motion.div
-              key={index}
-              className="stat-card"
-              initial={{ opacity: 0, y: 20 }}
-              animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-            >
-              <div className="stat-icon">
-                <stat.icon />
-              </div>
-              <div className="stat-value">{stat.value}</div>
-              <div className="stat-label">{stat.label}</div>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-};
-
-// Features Section Component
-const FeaturesSection = () => {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
 
   const features = [
     {
-      icon: Building2,
-      title: 'Multi-Hospital Access',
-      description: 'Access all major hospitals in India through one platform. Compare facilities, ratings, and book instantly.',
-      color: 'blue'
+      icon: Search,
+      title: 'Easy Search',
+      description: 'Find doctors and hospitals near you with advanced filters',
+      color: '#0066FF'
     },
     {
-      icon: Brain,
-      title: 'AI Doctor Suggestions',
-      description: 'Get intelligent doctor recommendations based on your symptoms using advanced AI algorithms.',
-      color: 'purple'
-    },
-    {
-      icon: Clock,
-      title: 'Instant Booking',
-      description: 'Book appointments in seconds with our streamlined process. No more waiting on hold.',
-      color: 'green'
+      icon: Calendar,
+      title: 'Quick Booking',
+      description: 'Book appointments in seconds with real-time availability',
+      color: '#00D9C0'
     },
     {
       icon: Shield,
-      title: 'Secure & Private',
-      description: 'Your health data is protected with enterprise-grade security and encryption.',
-      color: 'red'
+      title: 'Secure & Safe',
+      description: 'Your medical data is encrypted and completely secure',
+      color: '#FF6B6B'
     },
     {
-      icon: Activity,
-      title: 'Health Tracking',
-      description: 'Monitor your health metrics, appointments, and medical history all in one place.',
-      color: 'orange'
-    },
-    {
-      icon: MapPin,
-      title: 'Location-Based Search',
-      description: 'Find hospitals and doctors near you with our smart location-based search.',
-      color: 'cyan'
+      icon: Clock,
+      title: '24/7 Support',
+      description: 'Round-the-clock customer support for your needs',
+      color: '#10B981'
     }
   ];
 
-  return (
-    <section className="features-section" ref={ref}>
-      <div className="container">
-        <motion.div 
-          className="section-header"
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
-        >
-          <h2 className="section-title">
-            Why Choose <span className="gradient-text">HealthCare Pro</span>?
-          </h2>
-          <p className="section-description">
-            Experience healthcare like never before with our cutting-edge platform
-            connecting you to the best hospitals and doctors.
-          </p>
-        </motion.div>
+  const specialties = [
+    { name: 'Cardiology', icon: Heart, gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' },
+    { name: 'Neurology', icon: Activity, gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)' },
+    { name: 'Orthopedics', icon: Stethoscope, gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)' },
+    { name: 'Pediatrics', icon: Users, gradient: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)' },
+    { name: 'Oncology', icon: Zap, gradient: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)' },
+    { name: 'ENT', icon: Award, gradient: 'linear-gradient(135deg, #30cfd0 0%, #330867 100%)' }
+  ];
 
-        <div className="features-grid">
-          {features.map((feature, index) => (
-            <motion.div
-              key={index}
-              className={`feature-card feature-card-${feature.color}`}
-              initial={{ opacity: 0, y: 20 }}
-              animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              whileHover={{ y: -8, transition: { duration: 0.2 } }}
-            >
-              <div className="feature-icon-wrapper">
-                <feature.icon className="feature-icon" />
-              </div>
-              <h3 className="feature-title">{feature.title}</h3>
-              <p className="feature-description">{feature.description}</p>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-};
-
-// Featured Hospitals Section Component
-const FeaturedHospitalsSection = () => {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
-  const navigate = useNavigate();
-  const [hospitals, setHospitals] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchFeaturedHospitals();
-  }, []);
-
-  const fetchFeaturedHospitals = async () => {
-    try {
-      const response = await hospitalsAPI.getFeaturedHospitals();
-      if (response.success) {
-        setHospitals(response.hospitals || []);
-      }
-    } catch (error) {
-      console.error('Error fetching featured hospitals:', error);
-    } finally {
-      setLoading(false);
+  const handleSearch = () => {
+    if (searchQuery.trim()) {
+      navigate(`/hospitals?search=${searchQuery}`);
     }
   };
 
-  if (loading) {
-    return (
-      <section className="featured-hospitals-section">
+  return (
+    <div className="homepage">
+      <ScrollProgressBar />
+
+      {/* Hero Section with Parallax */}
+      <motion.section 
+        className="hero-section parallax-section"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.8 }}
+      >
+        <div className="hero-background">
+          <ParticleBackground />
+          <div className="gradient-orb orb-1"></div>
+          <div className="gradient-orb orb-2"></div>
+          <div className="gradient-orb orb-3"></div>
+        </div>
+
+        <div className="container hero-content">
+          <motion.div 
+            className="hero-text parallax-layer"
+            data-speed="0.5"
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+          >
+            <h1 className="hero-title">
+              Your Health, <br />
+              <span className="gradient-text">Our Priority</span>
+            </h1>
+            <p className="hero-description">
+              Book appointments with top doctors and hospitals across India. 
+              Fast, easy, and secure healthcare at your fingertips.
+            </p>
+
+            {/* Search Bar */}
+            <div className="hero-search">
+              <div className="search-input-wrapper">
+                <MapPin className="search-icon" size={20} />
+                <input
+                  type="text"
+                  placeholder="Search for hospitals, doctors, or specialties..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                  className="search-input"
+                />
+                <button onClick={handleSearch} className="search-button">
+                  <Search size={20} />
+                  Search
+                </button>
+              </div>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="quick-actions">
+              <button onClick={() => navigate('/hospitals')} className="btn btn-primary">
+                <Building2 size={18} />
+                Find Hospitals
+              </button>
+              <button onClick={() => navigate('/doctors')} className="btn btn-secondary">
+                <Users size={18} />
+                Find Doctors
+              </button>
+            </div>
+          </motion.div>
+
+          <motion.div 
+            className="hero-image parallax-layer"
+            data-speed="0.3"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+          >
+            <div className="floating-card card-1">
+              <Heart size={24} color="#FF6B6B" />
+              <div>
+                <div className="card-value">98%</div>
+                <div className="card-label">Success Rate</div>
+              </div>
+            </div>
+            <div className="floating-card card-2">
+              <TrendingUp size={24} color="#10B981" />
+              <div>
+                <div className="card-value">24/7</div>
+                <div className="card-label">Available</div>
+              </div>
+            </div>
+            <div className="hero-illustration">
+              <Stethoscope size={200} strokeWidth={1} className="illustration-icon" />
+            </div>
+          </motion.div>
+        </div>
+      </motion.section>
+
+      {/* Stats Section with Counter Animation */}
+      <section className="stats-section">
         <div className="container">
-          <div className="section-header">
-            <h2 className="section-title">Loading Featured Hospitals...</h2>
+          <div className="stats-grid">
+            {stats.map((stat, index) => (
+              <AnimatedStat key={index} {...stat} />
+            ))}
           </div>
         </div>
       </section>
-    );
-  }
 
-  if (hospitals.length === 0) {
-    return null;
-  }
+      {/* Features Section with 3D Tilt */}
+      <section className="features-section parallax-section">
+        <div className="container">
+          <motion.div 
+            className="section-header"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            <h2>Why Choose Us?</h2>
+            <p>Experience healthcare booking like never before</p>
+          </motion.div>
 
-  return (
-    <section className="featured-hospitals-section" ref={ref}>
-      <div className="container">
-        <motion.div 
-          className="section-header"
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
-        >
-          <h2 className="section-title">
-            Top <span className="gradient-text">Featured Hospitals</span>
-          </h2>
-          <p className="section-description">
-            Explore our network of premium healthcare facilities across India
-          </p>
-        </motion.div>
-
-        <div className="hospitals-carousel">
-          {hospitals.slice(0, 3).map((hospital, index) => (
-            <motion.div
-              key={hospital._id}
-              className="hospital-feature-card"
-              initial={{ opacity: 0, y: 20 }}
-              animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              whileHover={{ y: -8, transition: { duration: 0.2 } }}
-              onClick={() => navigate(`/hospitals/${hospital._id}`)}
-            >
-              <div className="hospital-card-icon">
-                <Building2 size={32} />
-              </div>
-              
-              <h3 className="hospital-card-title">{hospital.hospitalName}</h3>
-              
-              <div className="hospital-card-location">
-                <MapPin size={16} />
-                <span>{hospital.location.address.city}, {hospital.location.address.state}</span>
-              </div>
-
-              <div className="hospital-card-stats">
-                <div className="stat">
-                  <Users size={16} />
-                  <span>{hospital.staff.totalDoctors}+ Doctors</span>
+          <div className="features-grid">
+            {features.map((feature, index) => (
+              <motion.div
+                key={index}
+                className="feature-card tilt-card"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                whileHover={{ 
+                  y: -10,
+                  rotateX: 5,
+                  rotateY: 5,
+                  transition: { duration: 0.3 }
+                }}
+                style={{ transformStyle: 'preserve-3d' }}
+              >
+                <div className="feature-icon" style={{ background: feature.color }}>
+                  <feature.icon size={32} color="white" />
                 </div>
-                <div className="stat">
-                  <Bed size={16} />
-                  <span>{hospital.capacity.totalBeds} Beds</span>
-                </div>
-              </div>
-
-              <div className="hospital-card-rating">
-                <Star size={16} fill="#fbbf24" color="#fbbf24" />
-                <span>{hospital.ratings.average.toFixed(1)}/5</span>
-                <span className="rating-count">({hospital.ratings.totalReviews})</span>
-              </div>
-
-              <button className="hospital-card-btn">
-                View Hospital
-                <ArrowRight size={16} />
-              </button>
-            </motion.div>
-          ))}
+                <h3>{feature.title}</h3>
+                <p>{feature.description}</p>
+              </motion.div>
+            ))}
+          </div>
         </div>
+      </section>
 
-        <motion.div 
-          className="view-all-hospitals"
-          initial={{ opacity: 0 }}
-          animate={isInView ? { opacity: 1 } : {}}
-          transition={{ duration: 0.6, delay: 0.4 }}
-        >
-          <Link to="/hospitals" className="btn btn-primary btn-lg">
-            <Building2 size={20} />
-            View All Hospitals
+      {/* Specialties Section */}
+      <section className="specialties-section">
+        <div className="container">
+          <motion.div 
+            className="section-header"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            <h2>Browse by Specialty</h2>
+            <p>Find expert doctors in various medical fields</p>
+          </motion.div>
+
+          <div className="specialties-grid">
+            {specialties.map((specialty, index) => (
+              <motion.div
+                key={index}
+                className="specialty-card"
+                style={{ background: specialty.gradient }}
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                whileHover={{ 
+                  scale: 1.05,
+                  rotateZ: 5,
+                  transition: { duration: 0.3 }
+                }}
+                onClick={() => navigate(`/doctors?specialty=${specialty.name}`)}
+              >
+                <specialty.icon size={40} color="white" strokeWidth={1.5} />
+                <h4>{specialty.name}</h4>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <motion.section 
+        className="cta-section"
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.8 }}
+      >
+        <div className="container cta-content">
+          <h2>Ready to book your appointment?</h2>
+          <p>Join thousands of satisfied patients who trust us with their healthcare</p>
+          <button onClick={() => navigate('/hospitals')} className="btn btn-cta">
+            Get Started
             <ArrowRight size={20} />
-          </Link>
-        </motion.div>
-      </div>
-    </section>
-  );
-};
-
-// How It Works Section Component
-const HowItWorksSection = () => {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
-
-  const steps = [
-    {
-      number: '01',
-      title: 'Browse Hospitals',
-      description: 'Search and compare hospitals by location, specialty, and ratings.',
-      icon: Building2
-    },
-    {
-      number: '02',
-      title: 'Find Your Doctor',
-      description: 'Browse doctors by specialty or let our AI recommend the perfect match.',
-      icon: Stethoscope
-    },
-    {
-      number: '03',
-      title: 'Book Appointment',
-      description: 'Choose your preferred date and time. Get instant confirmation.',
-      icon: Calendar
-    },
-    {
-      number: '04',
-      title: 'Get Care',
-      description: 'Visit the hospital and receive quality healthcare from expert professionals.',
-      icon: Heart
-    }
-  ];
-
-  return (
-    <section className="how-it-works-section" ref={ref}>
-      <div className="container">
-        <motion.div 
-          className="section-header"
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
-        >
-          <h2 className="section-title">
-            How It <span className="gradient-text">Works</span>
-          </h2>
-          <p className="section-description">
-            Get started in four simple steps and experience seamless healthcare
-          </p>
-        </motion.div>
-
-        <div className="steps-container">
-          {steps.map((step, index) => (
-            <motion.div
-              key={index}
-              className="step-card"
-              initial={{ opacity: 0, x: -20 }}
-              animate={isInView ? { opacity: 1, x: 0 } : {}}
-              transition={{ duration: 0.5, delay: index * 0.15 }}
-            >
-              <div className="step-number">{step.number}</div>
-              <div className="step-icon">
-                <step.icon />
-              </div>
-              <h3 className="step-title">{step.title}</h3>
-              <p className="step-description">{step.description}</p>
-              {index < steps.length - 1 && (
-                <div className="step-connector">
-                  <ArrowRight />
-                </div>
-              )}
-            </motion.div>
-          ))}
+          </button>
         </div>
-      </div>
-    </section>
-  );
-};
-
-// Testimonials Section Component
-const TestimonialsSection = () => {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
-
-  const testimonials = [
-    {
-      name: 'Sarah Johnson',
-      role: 'Software Engineer',
-      image: 'SJ',
-      rating: 5,
-      text: 'Finding the right hospital was so easy! I could compare all options in my city and book instantly. Highly recommend!'
-    },
-    {
-      name: 'Michael Chen',
-      role: 'Business Owner',
-      image: 'MC',
-      rating: 5,
-      text: 'Finally, a platform that aggregates all hospitals! No more endless searching. Everything I need in one place.'
-    },
-    {
-      name: 'Emily Rodriguez',
-      role: 'Teacher',
-      image: 'ER',
-      rating: 5,
-      text: 'Managing my family\'s healthcare has never been easier. Love the multi-hospital feature!'
-    }
-  ];
-
-  return (
-    <section className="testimonials-section" ref={ref}>
-      <div className="container">
-        <motion.div 
-          className="section-header"
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
-        >
-          <h2 className="section-title">
-            What Our <span className="gradient-text">Patients Say</span>
-          </h2>
-          <p className="section-description">
-            Join thousands of satisfied patients who trust us with their healthcare
-          </p>
-        </motion.div>
-
-        <div className="testimonials-grid">
-          {testimonials.map((testimonial, index) => (
-            <motion.div
-              key={index}
-              className="testimonial-card"
-              initial={{ opacity: 0, y: 20 }}
-              animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-            >
-              <div className="testimonial-stars">
-                {[...Array(testimonial.rating)].map((_, i) => (
-                  <Star key={i} size={16} fill="#fbbf24" color="#fbbf24" />
-                ))}
-              </div>
-              <p className="testimonial-text">"{testimonial.text}"</p>
-              <div className="testimonial-author">
-                <div className="author-avatar">{testimonial.image}</div>
-                <div className="author-info">
-                  <div className="author-name">{testimonial.name}</div>
-                  <div className="author-role">{testimonial.role}</div>
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-};
-
-// CTA Section Component
-const CTASection = () => {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
-
-  return (
-    <section className="cta-section" ref={ref}>
-      <div className="cta-background">
-        <div className="cta-gradient-1"></div>
-        <div className="cta-gradient-2"></div>
-      </div>
-      
-      <div className="container">
-        <motion.div 
-          className="cta-content"
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
-        >
-          <h2 className="cta-title">Ready to Take Control of Your Health?</h2>
-          <p className="cta-description">
-            Join thousands of patients who have transformed their healthcare experience
-          </p>
-          <div className="cta-actions">
-            <Link to="/register" className="btn btn-primary btn-xl">
-              <Users size={20} />
-              Create Free Account
-              <ArrowRight size={20} />
-            </Link>
-            <Link to="/hospitals" className="btn btn-secondary btn-xl">
-              <Building2 size={20} />
-              Explore Hospitals
-            </Link>
-          </div>
-          <div className="cta-trust">
-            <span>✓ No credit card required</span>
-            <span>✓ Free forever</span>
-            <span>✓ Cancel anytime</span>
-          </div>
-        </motion.div>
-      </div>
-    </section>
+      </motion.section>
+    </div>
   );
 };
 
